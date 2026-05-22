@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Dyna Store — discover and buy the best PC & console games." />
+  <title>Dyna Store — Games</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <base href="./" id="dyna-base" />
+  <style>
+    html, body { margin: 0; min-height: 100%; background: #0a0b0f; color: #f4f4f6; font-family: system-ui, sans-serif; }
+    .app { min-height: 100vh; display: flex; flex-direction: column; }
+  </style>
+  <script>
+    (function () {
+      try {
+        var href = location.href.split('#')[0].split('?')[0]
+        var slash = href.lastIndexOf('/')
+        if (slash >= 0) document.getElementById('dyna-base').href = href.slice(0, slash + 1)
+      } catch (e) {}
+    })()
+  </script>
+  <script>
+    (function () {
+      if (location.hostname.endsWith('.github.io')) return
+      var store = 'http://127.0.0.1:8787/index.html'
+      var onStore =
+        (location.hostname === '127.0.0.1' || location.hostname === 'localhost') &&
+        location.port === '8787'
+      if (onStore) return
+      if (location.protocol === 'file:') {
+        location.replace(store)
+        return
+      }
+      fetch('http://127.0.0.1:8787/api/health', { mode: 'cors' })
+        .then(function (r) {
+          if (r.ok) location.replace(store)
+        })
+        .catch(function () {})
+    })()
+  </script>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <a href="#" class="logo"><span class="logo-icon">D</span> Dyna Store</a>
+      <nav class="nav">
+        <a href="#topup" class="nav-link active">Top Up</a>
+        <a href="#uploadSection" class="nav-link">Upload</a>
+        <a href="#store" class="nav-link">Store</a>
+        <a href="#store" class="nav-link" data-cat="Action">Action</a>
+        <a href="#store" class="nav-link" data-cat="RPG">RPG</a>
+        <a href="#store" class="nav-link" data-cat="Indie">Indie</a>
+      </nav>
+      <div class="header-actions">
+        <div class="user-wallet" id="userWallet" aria-label="Account balance">
+          <div class="user-wallet-main">
+            <span class="user-wallet-label">Balance</span>
+            <span class="user-wallet-amount" id="userBalance">$0.00</span>
+          </div>
+          <a href="#topup" class="user-wallet-topup" id="walletTopUp">+ Top up</a>
+        </div>
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="search" id="search" class="search-input" placeholder="Search games..." />
+        </div>
+        <button type="button" class="cart-btn" id="openCart" aria-label="Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span class="cart-badge hidden" id="cartBadge">0</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-content">
+        <span class="hero-label">Digital game store</span>
+        <h1>Play more. Browse less.</h1>
+        <p>Curated PC and console titles with instant delivery. Find your next favorite game in seconds.</p>
+        <div class="hero-cta">
+          <a href="#store" class="btn btn-primary">Browse games</a>
+          <button type="button" class="btn btn-ghost" id="viewAll">View all</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="topup-section" id="topup">
+      <div class="server-status server-status--offline hidden" id="serverStatus" role="status">
+        <strong>Checking payment API…</strong>
+        <button type="button" class="server-retry-btn" id="serverRetry">Retry</button>
+      </div>
+      <div class="topup-wallet-card">
+        <div class="topup-wallet-card-inner">
+          <span class="topup-wallet-card-label">ទឹកប្រាក់របស់អ្នក · Your balance</span>
+          <p class="topup-wallet-card-amount" id="topupBalanceDisplay">$0.00</p>
+          <p class="topup-wallet-card-khr" id="topupBalanceKhr">៛0</p>
+        </div>
+      </div>
+      <h2 class="topup-label">ជ្រើសរើសចំនួនទឹកប្រាក់ <span class="topup-currency">(USD)</span></h2>
+      <div class="topup-grid" id="topupGrid" role="group" aria-label="Top up amount in USD"></div>
+      <label class="khqr-field topup-bakong-field">
+        <span>Bakong account ID <em>(exact ID from Bakong — e.g. name@aba)</em></span>
+        <input type="text" id="bakongAccount" placeholder="ben_sothida@aba" autocomplete="off" />
+      </label>
+      <label class="khqr-field topup-bakong-field hidden" aria-hidden="true">
+        <span>Bakong register email</span>
+        <input type="email" id="bakongEmail" placeholder="you@email.com" autocomplete="email" tabindex="-1" />
+      </label>
+      <p class="topup-pay-label">វិធីសាស្ត្រទូទាត់</p>
+      <div class="topup-pay-method">
+        <span class="bakong-badge">Bakong</span>
+        <span class="topup-pay-scan">Scan QR to pay</span>
+      </div>
+      <button type="button" class="topup-confirm" id="topupConfirm">Pay with Bakong — $0.01</button>
+    </section>
+
+    <section class="upload-section" id="uploadSection">
+      <div class="upload-toolbar">
+        <div class="upload-toolbar-info">
+          <h2 class="upload-title">Upload games</h2>
+          <p class="upload-desc">Add <strong>.zip</strong> builds up to <strong>500 GB</strong> — saved in your browser (Chrome / Edge recommended).</p>
+        </div>
+        <div class="upload-actions">
+          <input type="file" id="gameZipInput" class="upload-input-hidden" accept=".zip,application/zip" />
+          <input type="file" id="gameZipMulti" class="upload-input-hidden" accept=".zip,application/zip" multiple />
+          <button type="button" class="upload-btn upload-btn--primary" id="btnUploadZip">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload ZIP
+          </button>
+          <button type="button" class="upload-btn upload-btn--secondary" id="btnUploadMulti">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            Upload multiple
+          </button>
+          <button type="button" class="upload-btn upload-btn--ghost" id="btnToggleUploads">My uploads</button>
+        </div>
+      </div>
+      <div class="upload-panel hidden" id="uploadPanel">
+        <div class="upload-form">
+          <label class="upload-field">
+            <span>Title</span>
+            <input type="text" id="uploadTitle" placeholder="Game name" />
+          </label>
+          <label class="upload-field">
+            <span>Category</span>
+            <select id="uploadCategory">
+              <option>Action</option>
+              <option>RPG</option>
+              <option selected>Indie</option>
+              <option>Sports</option>
+              <option>Strategy</option>
+            </select>
+          </label>
+          <label class="upload-field">
+            <span>Price (USD)</span>
+            <input type="number" id="uploadPrice" min="0" step="0.01" value="9.99" />
+          </label>
+        </div>
+        <p class="upload-pending hidden" id="uploadPending"></p>
+        <div class="upload-progress hidden" id="uploadProgress">
+          <div class="upload-progress-track"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
+        </div>
+        <ul class="upload-list" id="uploadList"></ul>
+      </div>
+    </section>
+
+    <main class="main" id="store">
+      <div class="section-header">
+        <h2>All games</h2>
+        <span class="count" id="gameCount">0 titles</span>
+      </div>
+      <div class="categories" id="categories"></div>
+      <div class="games-grid" id="grid"></div>
+      <div class="empty-state hidden" id="empty">
+        <h3>No games found</h3>
+        <p>Try a different search or category.</p>
+      </div>
+    </main>
+
+    <footer class="footer">© <span id="year"></span> Dyna Store — Demo game shop</footer>
+
+    <div class="overlay" id="overlay"></div>
+    <aside class="cart-drawer" id="drawer">
+      <div class="cart-header">
+        <h2>Your cart</h2>
+        <button type="button" class="close-btn" id="closeCart" aria-label="Close">×</button>
+      </div>
+      <div class="cart-items" id="cartItems"></div>
+      <div class="cart-footer">
+        <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
+        <button type="button" class="checkout-btn" id="checkout" disabled>Checkout</button>
+      </div>
+    </aside>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <div class="khqr-overlay" id="khqrOverlay" aria-hidden="true">
+      <div class="khqr-modal" role="dialog" aria-labelledby="khqrTitle" aria-modal="true">
+        <div class="khqr-modal-header">
+          <div class="khqr-brands">
+            <span class="khqr-brand-bakong">Bakong</span>
+          </div>
+          <button type="button" class="khqr-close" id="khqrClose" aria-label="Close">×</button>
+        </div>
+        <h2 class="khqr-title" id="khqrTitle">ស្កេនដើម្បីទូទាត់</h2>
+        <p class="khqr-merchant" id="khqrMerchant">DYNA STORE</p>
+        <p class="khqr-amount-usd" id="khqrAmountUsd">$0.01</p>
+        <p class="khqr-amount-khr" id="khqrAmountKhr">៛4,100</p>
+        <div class="khqr-qr-wrap">
+          <div id="khqrQr" class="khqr-qr"></div>
+        </div>
+        <p class="khqr-account-label">Bakong account</p>
+        <p class="khqr-account" id="khqrAccount">dynastore@bkrt</p>
+        <p class="khqr-account-warn hidden" id="khqrAccountWarn">Set your real Bakong ID in API settings — demo account cannot receive payments.</p>
+        <p class="khqr-expire" id="khqrExpire"></p>
+        <div class="khqr-status khqr-status--pending" id="khqrStatus">
+          <span class="khqr-status-dot" aria-hidden="true"></span>
+          <span id="khqrStatusText">Scan & pay — balance updates automatically</span>
+        </div>
+        <p class="khqr-hint">Scan with Bakong app or any bank app that supports QR pay</p>
+        <button type="button" class="khqr-check" id="khqrCheckNow">Check payment now</button>
+        <button type="button" class="khqr-credit" id="khqrCreditPaid">I paid — verify &amp; add balance</button>
+        <div class="khqr-advanced" id="khqrAdvanced">
+          <div class="khqr-md5-block" id="khqrMd5Block">
+            <p class="khqr-md5-label">MD5</p>
+            <p class="khqr-md5" id="khqrMd5">—</p>
+            <button type="button" class="khqr-copy-sm" id="khqrCopyMd5">Copy MD5</button>
+          </div>
+          <details class="khqr-settings">
+            <summary>Advanced (API token)</summary>
+            <label class="khqr-field hidden" aria-hidden="true">
+              <span>Email</span>
+              <input type="email" class="bakong-email-sync" placeholder="register email" autocomplete="email" tabindex="-1" />
+            </label>
+            <label class="khqr-field">
+              <span>API token</span>
+              <input type="password" id="bakongToken" autocomplete="off" />
+            </label>
+            <label class="khqr-field">
+              <span>Proxy</span>
+              <input type="text" id="bakongProxy" placeholder="http://127.0.0.1:8787/api/check-md5" />
+            </label>
+            <input type="hidden" id="bakongVerifyCode" value="" />
+            <button type="button" class="khqr-renew hidden" id="bakongFixToken">Fix token</button>
+            <button type="button" class="khqr-renew-secondary hidden" id="bakongRenewToken">Renew token</button>
+            <p class="khqr-renew-status" id="bakongRenewStatus"></p>
+          </details>
+          <button type="button" class="khqr-copy" id="khqrCopy">Copy payment code</button>
+        </div>
+      </div>
+    </div>
+
+  <p id="bootMsg" class="boot-msg">Loading Dyna Store…</p>
+  <script>
+    (function () {
+      var href = location.href.split('#')[0].split('?')[0]
+      var slash = href.lastIndexOf('/')
+      var root = slash >= 0 ? href.slice(0, slash + 1) : './'
+      window.DYNA_ASSET_ROOT = root
+      var s = document.createElement('script')
+      s.src = root + 'standalone/boot.js'
+      s.onerror = function () {
+        var m = document.getElementById('bootMsg')
+        if (m) {
+          m.textContent =
+            'Could not load app. Run start.bat then open http://127.0.0.1:8787/index.html'
+        }
+      }
+      document.body.appendChild(s)
+    })()
+  </script>
+</body>
+</html>
